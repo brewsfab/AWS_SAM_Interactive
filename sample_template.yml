@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  DynamoDB sample
+
+  Sample SAM Template for DynamoDB
+
+Globals:
+  Function:
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref MyDynamoTable
+
+Resources:
+  MyDynamoTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: userId
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+
+  GetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/app.getItem
+      Runtime: python3.8
+      Policies:
+        DynamoDBReadPolicy:
+          TableName: !Ref MyDynamoTable
+      Events:
+        HttpGet:
+          Type: HttpApi
+          Properties:
+            Path: /{userId}
+            Method: get
+
+  PutFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/app.putItem
+      Runtime: python3.8
+      Policies:
+        DynamoDBWritePolicy:
+          TableName: !Ref MyDynamoTable
+      Events:
+        HttpGet:
+          Type: HttpApi
+          Properties:
+            Path: /{userId}
+            Method: post
+  UpdateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/app.updateItem
+      Runtime: python3.8
+      Policies:
+        DynamoDBCrudPolicy:
+          TableName: !Ref MyDynamoTable
+      Events:
+        HttpGet:
+          Type: HttpApi
+          Properties:
+            Path: /{userId}
+            Method: put
+
+
+  DelFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/app.delItem
+      Runtime: python3.8
+      Policies:
+        DynamoDBCrudPolicy:
+          TableName: !Ref MyDynamoTable
+      Events:
+        HttpGet:
+          Type: HttpApi
+          Properties:
+            Path: /{userId}
+            Method: delete
+
+
+Outputs:
+
+  HttpApiURL:
+    Description: HttpApi URL
+    Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/'
